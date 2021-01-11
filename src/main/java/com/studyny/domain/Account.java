@@ -5,6 +5,11 @@ import lombok.*;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
+/**
+* 계정 정보
+* @author nyju
+* @since 2021-01-11 오후 11:49
+**/
 @Entity
 @Getter @Setter @EqualsAndHashCode(of="id")
 @Builder @AllArgsConstructor @NoArgsConstructor
