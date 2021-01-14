@@ -4,6 +4,7 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 /**
 * 계정 정보
@@ -49,10 +50,13 @@ public class Account {
 
     private boolean studyEnrollmentRResultByEmail; // 스터디 가입신청 이메일 알림 여부
 
-    private boolean studyEnrollmentRResultByWeb; // 스터디 가입신청 웹 알림 여부
+    private boolean studyEnrollmentResultByWeb; // 스터디 가입신청 웹 알림 여부
 
     private boolean studyUpdatedByEmail; // 스터디 갱신정보 이메일 알림 여부
 
     private boolean studyUpdatedByWeb; // 스터디 갱신정보 웹 알림 여부
 
+    public void generateEmailCheckToken() {
+        this.emailCheckToken = UUID.randomUUID().toString(); // 랜덤 UUID 사용
+    }
 }
