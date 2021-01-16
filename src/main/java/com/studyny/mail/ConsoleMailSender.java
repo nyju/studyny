@@ -1,4 +1,4 @@
-package com.studyny;
+package com.studyny.mail;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;

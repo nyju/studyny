@@ -26,6 +26,7 @@ public class AccountController {
 
     private final SignUpFormValidator signUpFormValidator;
     private final AccountService accountService;
+    private final AccountRepository accountRepository;
 
 
     // Validator사용 시 @Valid로 검증이 필요한 객체를 가져오기 전에 수행할 검증method를 지정
@@ -50,5 +51,28 @@ public class AccountController {
         accountService.processNewAccount(signUpForm);
 
         return "redirect:/";
+    }
+
+    // 인증메일 확인
+    @GetMapping("/check-email-token")
+    public String checkEmailToken(String token, String email, Model model) {
+        Account account = accountRepository.findByEmail(email);
+        String view = "account/checked-email";
+        if (account == null) {
+            model.addAttribute("error", "wrong.email");
+            return view;
+        }
+
+        if (!account.getEmailCheckToken().equals(token)) {
+            model.addAttribute("error", "wrong.token");
+            return view;
+        }
+
+        account.completeSignUp();
+/*        account.setEmailVerified(true); 리팩토링 - Account로 이동
+        account.setJoinedAt(LocalDateTime.now()); */
+        model.addAttribute("numberOfUser", accountRepository.count());
+        model.addAttribute("nickname", account.getNickname());
+        return view;
     }
 }

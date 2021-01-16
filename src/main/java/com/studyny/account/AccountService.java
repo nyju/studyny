@@ -6,8 +6,12 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import javax.validation.Valid;
+import java.time.LocalDateTime;
 
 
 /**
@@ -23,9 +27,12 @@ public class AccountService {
     private final JavaMailSender javaMailSender;
     private final PasswordEncoder passwordEncoder;
 
+    @Transactional
     public void processNewAccount(SignUpForm signUpForm) {
         Account newAccount = saveNewAccount(signUpForm); // 새로운 Account 생성
         newAccount.generateEmailCheckToken(); // 이메일 체크 토큰 생성
+        // saveNewAccount 후에 detached 상태가 되기 때문에 토큰값이 저장이 안됨
+        // persist 상태 유지를 위해 @Transactional 을 붙여야 함
 
         sendSignUpConfirmEmail(newAccount); // 이메일 전송
     }
