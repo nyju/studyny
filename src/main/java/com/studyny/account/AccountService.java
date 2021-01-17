@@ -4,14 +4,19 @@ import com.studyny.domain.Account;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
+
 
 import javax.validation.Valid;
-import java.time.LocalDateTime;
+import java.util.List;
 
 
 /**
@@ -26,15 +31,17 @@ public class AccountService {
     private final AccountRepository accountRepository;
     private final JavaMailSender javaMailSender;
     private final PasswordEncoder passwordEncoder;
+    //private final AuthenticationManager authenticationManager; 사용하려면 스프링시큐리티 설정을 다르게 해줘야함
 
     @Transactional
-    public void processNewAccount(SignUpForm signUpForm) {
+    public Account processNewAccount(SignUpForm signUpForm) {
         Account newAccount = saveNewAccount(signUpForm); // 새로운 Account 생성
         newAccount.generateEmailCheckToken(); // 이메일 체크 토큰 생성
         // saveNewAccount 후에 detached 상태가 되기 때문에 토큰값이 저장이 안됨
         // persist 상태 유지를 위해 @Transactional 을 붙여야 함
 
         sendSignUpConfirmEmail(newAccount); // 이메일 전송
+        return newAccount;
     }
 
     private Account saveNewAccount(@Valid SignUpForm signUpForm) {
@@ -56,5 +63,21 @@ public class AccountService {
         mailMessage.setText("/check-email-token?token=" + newAccount.getEmailCheckToken() +
                 "&email=" + newAccount.getEmail());
         javaMailSender.send(mailMessage);
+    }
+
+    public void login(Account account) {
+        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
+                account.getNickname(),
+                account.getPassword(),
+                List.of(new SimpleGrantedAuthority("ROLE_USER")));
+
+        SecurityContextHolder.getContext().setAuthentication(token);
+
+//        아래가 정석적인 방법. 위와 같은 기능을 함
+//        정석적으로 하려면 인코딩된 비밀번호가 아닌 플레인텍스트로 받은 비밀번호를 사용하여야 함.
+//        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(username, password);
+//        Authentication authentication = authenticationManager.authenticate(token);
+//        SecurityContext context =SecurityContextHolder.getContext();
+//        context.setAuthentication(authentication);
     }
 }

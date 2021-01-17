@@ -48,8 +48,8 @@ public class AccountController {
         if (errors.hasErrors()) {
             return "account/sign-up"; //에러가 있으면 다시 폼으로
         }
-        accountService.processNewAccount(signUpForm);
-
+        Account account = accountService.processNewAccount(signUpForm);
+        accountService.login(account);
         return "redirect:/";
     }
 
@@ -63,12 +63,13 @@ public class AccountController {
             return view;
         }
 
-        if (!account.getEmailCheckToken().equals(token)) {
+        if (!account.isValidToken(token)) {
             model.addAttribute("error", "wrong.token");
             return view;
         }
 
         account.completeSignUp();
+        accountService.login(account);
 /*        account.setEmailVerified(true); 리팩토링 - Account로 이동
         account.setJoinedAt(LocalDateTime.now()); */
         model.addAttribute("numberOfUser", accountRepository.count());
