@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
 /**
 * Account를 직접 사용하기 위한 Custom 어노테이션 생성
 * @author nyju
-* @since 2021-01-19 오후 11:42
+* @since 2021-01-23 오후 12:41
 **/
 @Retention(RetentionPolicy.RUNTIME) // 런타입까지 유지되어야 함
 @Target(ElementType.PARAMETER) // 파라미터를 붙일 수 있도록
