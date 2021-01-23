@@ -20,10 +20,17 @@ public class SecutiryConfig extends WebSecurityConfigurerAdapter {
     @Override // 원하는 특정요청은 인증체크를 하지않도록 오버라이딩
     protected void configure(HttpSecurity http) throws Exception {
        http.authorizeRequests()
-               .mvcMatchers("/","/login","/sign-up","/check-email","/check-email-token",
-                       "/email-login","/check-email-login", "/login-link").permitAll() // 전체 접근 허용
+               .mvcMatchers("/","/login","/sign-up", "/check-email-token",
+                       "/email-login","/check-email-login", "/login-link", "/h2-console/*", "/h2-console").permitAll() // 전체 접근 허용
                .mvcMatchers(HttpMethod.GET,"/profile/*").permitAll() // 프로필은 get 요청만 허용
                .anyRequest().authenticated();
+
+
+        http.formLogin() // 커스텀한 로그인페이지 URL. 설정하지 않으면 시큐리티기본 로그인페이지가 보임
+                .loginPage("/login").permitAll(); // GET, POST 모두 동일한 경로를 사용
+
+        http.logout() // 로그아웃 했을때 이동할 URL
+                .logoutSuccessUrl("/");
     }
 
 
