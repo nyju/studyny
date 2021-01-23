@@ -1,12 +1,19 @@
 package com.studyny.config;
 
+import com.studyny.account.AccountService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
+
+import javax.sql.DataSource;
 
 /**
 * Secutiry Config 설정
@@ -15,7 +22,11 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 **/
 @Configuration
 @EnableWebSecurity // 스프링 시큐리티 사용을 위한 선언
+@RequiredArgsConstructor
 public class SecutiryConfig extends WebSecurityConfigurerAdapter {
+
+    private final AccountService accountService;
+    private final DataSource dataSource;
 
     @Override // 원하는 특정요청은 인증체크를 하지않도록 오버라이딩
     protected void configure(HttpSecurity http) throws Exception {
@@ -31,6 +42,19 @@ public class SecutiryConfig extends WebSecurityConfigurerAdapter {
 
         http.logout() // 로그아웃 했을때 이동할 URL
                 .logoutSuccessUrl("/");
+
+
+        http.rememberMe() //Username, 토큰(랜덤, 매번 바뀜), 시리즈(랜덤, 고정) 세 가지 정보 이용
+                .userDetailsService(accountService)
+                .tokenRepository(tokenRepository());
+
+    }
+
+    @Bean // 토큰 레파지토리 구현체
+    public PersistentTokenRepository tokenRepository() {
+        JdbcTokenRepositoryImpl jdbcTokenRepository = new JdbcTokenRepositoryImpl();
+        jdbcTokenRepository.setDataSource(dataSource);
+        return jdbcTokenRepository;
     }
 
 
