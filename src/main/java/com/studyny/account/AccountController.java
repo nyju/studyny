@@ -8,10 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
@@ -68,8 +65,7 @@ public class AccountController {
             return view;
         }
 
-        account.completeSignUp();
-        accountService.login(account);
+        accountService.completeSignUp(account);
 /*        account.setEmailVerified(true); 리팩토링 - Account로 이동
         account.setJoinedAt(LocalDateTime.now()); */
         model.addAttribute("numberOfUser", accountRepository.count());
@@ -94,4 +90,17 @@ public class AccountController {
         accountService.sendSignUpConfirmEmail(account);
         return "redirect:/";
     }
+
+    @GetMapping("/profile/{nickname}") // @PathVariable 로 닉네임 파싱
+    public String viewProfile(@PathVariable String nickname, Model model, @CurrentUser Account account) {
+        Account byNickname = accountRepository.findByNickname(nickname);
+        if (nickname == null) {
+            throw new IllegalArgumentException(nickname + "에 해당하는 사용자가 없습니다.");
+        }
+
+        model.addAttribute(byNickname); // model.addAttribute("account", byNickname); 와 같음. camel case가 기본값
+        model.addAttribute("isOwner", byNickname.equals(account));
+        return "account/profile";
+    }
+
 }

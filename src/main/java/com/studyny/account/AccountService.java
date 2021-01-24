@@ -1,6 +1,7 @@
 package com.studyny.account;
 
 import com.studyny.domain.Account;
+import com.studyny.settings.Profile;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -27,7 +28,8 @@ import java.util.List;
  * @author nyju
  * @since 2021-01-16 오후 11:50
  **/
-@Service
+@Service //데이터 변경은 서비스 계층으로 위임해서 트랜잭션안에서 처리한다. 데이터 조회는 리파지토리 또는 서비스를 사용한다.
+@Transactional
 @RequiredArgsConstructor
 public class AccountService implements UserDetailsService {
 
@@ -36,7 +38,7 @@ public class AccountService implements UserDetailsService {
     private final PasswordEncoder passwordEncoder;
     //private final AuthenticationManager authenticationManager; 사용하려면 스프링시큐리티 설정을 다르게 해줘야함
 
-    @Transactional
+
     public Account processNewAccount(SignUpForm signUpForm) {
         Account newAccount = saveNewAccount(signUpForm); // 새로운 Account 생성
         newAccount.generateEmailCheckToken(); // 이메일 체크 토큰 생성
@@ -84,6 +86,7 @@ public class AccountService implements UserDetailsService {
 //        context.setAuthentication(authentication);
     }
 
+    @Transactional(readOnly = true) // 데이터를 변경하는것이 아닌 읽는 것이기 때문에
     @Override // 스프링 시큐리티에서 /login, /logout 에 대한 처리를 위해 구현해야함
     public UserDetails loadUserByUsername(String emailOrNickname) throws UsernameNotFoundException {
         Account account = accountRepository.findByEmail(emailOrNickname);
@@ -96,5 +99,20 @@ public class AccountService implements UserDetailsService {
         }
 
         return new UserAccount(account);
+    }
+
+    public void completeSignUp(Account account) {
+        account.completeSignUp();
+        login(account);
+    }
+
+    public void updateProfile(Account account, Profile profile) {
+        account.setUrl(profile.getUrl());
+        account.setOccupation(profile.getOccupation());
+        account.setLocation(profile.getLocation());
+        account.setBio(profile.getBio());
+        // TODO 프로필 이미지
+        accountRepository.save(account); // acount가 detached 상태이기 때문. completeSignUp의 account 와 상태 다름
+        // TODO 문제가 하나 더 남았습니다.
     }
 }
