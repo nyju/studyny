@@ -48,15 +48,15 @@ public class Account {
 
     private boolean studyCreatedByEmail; // 스터디생성 이메일 알림 여부
 
-    private boolean studyCreatedByWeb; // 스터디생성 웹 알림 여부
+    private boolean studyCreatedByWeb = true; // 스터디생성 웹 알림 여부
 
-    private boolean studyEnrollmentRResultByEmail; // 스터디 가입신청 이메일 알림 여부
+    private boolean studyEnrollmentResultByEmail; // 스터디 가입신청 이메일 알림 여부
 
-    private boolean studyEnrollmentResultByWeb; // 스터디 가입신청 웹 알림 여부
+    private boolean studyEnrollmentResultByWeb = true; // 스터디 가입신청 웹 알림 여부
 
     private boolean studyUpdatedByEmail; // 스터디 갱신정보 이메일 알림 여부
 
-    private boolean studyUpdatedByWeb; // 스터디 갱신정보 웹 알림 여부
+    private boolean studyUpdatedByWeb = true; // 스터디 갱신정보 웹 알림 여부
 
     public void generateEmailCheckToken() {
         this.emailCheckToken = UUID.randomUUID().toString(); // 랜덤 UUID 사용
