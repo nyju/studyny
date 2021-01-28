@@ -71,6 +71,8 @@ public class AccountService implements UserDetailsService {
     }
 
     public void login(Account account) {
+
+        System.out.println("##### login");
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
                 new UserAccount(account),
                 account.getPassword(),
@@ -113,6 +115,10 @@ public class AccountService implements UserDetailsService {
         account.setBio(profile.getBio());
         // TODO 프로필 이미지
         accountRepository.save(account); // acount가 detached 상태이기 때문. completeSignUp의 account 와 상태 다름
-        // TODO 문제가 하나 더 남았습니다.
+    }
+
+    public void updatePassword(Account account, String newPassword) {
+        account.setPassword(passwordEncoder.encode(newPassword));
+        accountRepository.save(account);
     }
 }
