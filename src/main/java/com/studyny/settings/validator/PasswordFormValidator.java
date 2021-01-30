@@ -1,6 +1,7 @@
-package com.studyny.settings;
+package com.studyny.settings.validator;
 
 
+import com.studyny.settings.form.PasswordForm;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
