@@ -4,6 +4,7 @@ import com.studyny.domain.Account;
 import com.studyny.settings.Notifications;
 import com.studyny.settings.Profile;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -37,6 +38,7 @@ public class AccountService implements UserDetailsService {
     private final AccountRepository accountRepository;
     private final JavaMailSender javaMailSender;
     private final PasswordEncoder passwordEncoder;
+    private final ModelMapper modelMapper;
     //private final AuthenticationManager authenticationManager; 사용하려면 스프링시큐리티 설정을 다르게 해줘야함
 
 
@@ -110,12 +112,16 @@ public class AccountService implements UserDetailsService {
     }
 
     public void updateProfile(Account account, Profile profile) {
-        account.setUrl(profile.getUrl());
-        account.setOccupation(profile.getOccupation());
-        account.setLocation(profile.getLocation());
-        account.setBio(profile.getBio());
+        modelMapper.map(profile, account);
         // TODO 프로필 이미지
         accountRepository.save(account); // acount가 detached 상태이기 때문. completeSignUp의 account 와 상태 다름
+
+
+//        account.setUrl(profile.getUrl()); modelMapper 로 간단히 구현
+//        account.setOccupation(profile.getOccupation());
+//        account.setLocation(profile.getLocation());
+//        account.setBio(profile.getBio());
+
     }
 
     public void updatePassword(Account account, String newPassword) {
@@ -124,12 +130,15 @@ public class AccountService implements UserDetailsService {
     }
 
     public void updateNotifications(Account account, Notifications notifications) {
-        account.setStudyCreatedByWeb(notifications.isStudyCreatedByWeb());
-        account.setStudyCreatedByEmail(notifications.isStudyCreatedByEmail());
-        account.setStudyUpdatedByWeb(notifications.isStudyUpdatedByWeb());
-        account.setStudyUpdatedByEmail(notifications.isStudyUpdatedByEmail());
-        account.setStudyEnrollmentResultByEmail(notifications.isStudyEnrollmentResultByEmail());
-        account.setStudyEnrollmentResultByWeb(notifications.isStudyEnrollmentResultByWeb());
+        modelMapper.map(notifications, account);
         accountRepository.save(account);
+
+//        account.setStudyCreatedByWeb(notifications.isStudyCreatedByWeb()); modelMapper 로 간단히 구현
+//        account.setStudyCreatedByEmail(notifications.isStudyCreatedByEmail());
+//        account.setStudyUpdatedByWeb(notifications.isStudyUpdatedByWeb());
+//        account.setStudyUpdatedByEmail(notifications.isStudyUpdatedByEmail());
+//        account.setStudyEnrollmentResultByEmail(notifications.isStudyEnrollmentResultByEmail());
+//        account.setStudyEnrollmentResultByWeb(notifications.isStudyEnrollmentResultByWeb());
+
     }
 }
