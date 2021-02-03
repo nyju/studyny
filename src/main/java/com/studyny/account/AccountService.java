@@ -138,4 +138,9 @@ public class AccountService implements UserDetailsService {
 //        account.setStudyEnrollmentResultByWeb(notifications.isStudyEnrollmentResultByWeb());
 
     }
+
+    public void updateNickname(Account account, String nickname) {
+        modelMapper.map(nickname, account);
+        accountRepository.save(account);
+    }
 }
