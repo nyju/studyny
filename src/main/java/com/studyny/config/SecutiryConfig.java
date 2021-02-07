@@ -61,6 +61,7 @@ public class SecutiryConfig extends WebSecurityConfigurerAdapter {
     @Override // 아이콘 안나오는 현상 -> static 리소스들은 시큐리티 필터 적용하지 않도록 설정
     public void configure(WebSecurity web) throws Exception {
         web.ignoring()
+                .mvcMatchers("/node_modules/**")
                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations());
     }
 }
