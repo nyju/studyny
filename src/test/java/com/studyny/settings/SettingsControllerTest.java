@@ -1,19 +1,25 @@
 package com.studyny.settings;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.studyny.WithAccount;
 import com.studyny.account.AccountRepository;
 import com.studyny.account.AccountService;
 import com.studyny.domain.Account;
+import com.studyny.domain.Tag;
+import com.studyny.settings.form.TagForm;
+import com.studyny.tag.TagRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.TestExecutionEvent;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -21,6 +27,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@Transactional
 @SpringBootTest
 @AutoConfigureMockMvc
 class SettingsControllerTest {
@@ -34,6 +41,13 @@ class SettingsControllerTest {
 
     @Autowired
     PasswordEncoder passwordEncoder;
+
+    @Autowired
+    ObjectMapper objectMapper;
+    @Autowired
+    TagRepository tagRepository;
+    @Autowired
+    AccountService accountService;
 
     @AfterEach
     void afterEach() {
@@ -56,7 +70,6 @@ class SettingsControllerTest {
                 .andExpect(model().attributeExists("account"))
                 .andExpect(model().attributeExists("profile"));
     }
-
 
 
     @WithAccount("nyju")
@@ -107,6 +120,7 @@ class SettingsControllerTest {
     @DisplayName("패스워드 수정 - 입력값 정상")
     @Test
     void updatePassword_success() throws Exception {
+
         mockMvc.perform(post(SettingsController.SETTINGS_PASSWORD_URL)
                 .param("newPassword", "12345678")
                 .param("newPasswordConfirm", "12345678")
@@ -115,6 +129,7 @@ class SettingsControllerTest {
                 .andExpect(redirectedUrl(SettingsController.SETTINGS_PASSWORD_URL))
                 .andExpect(flash().attributeExists("message"));
 
+        
         Account keesun = accountRepository.findByNickname("nyju");
         assertTrue(passwordEncoder.matches("12345678", keesun.getPassword()));
     }
@@ -132,5 +147,61 @@ class SettingsControllerTest {
                 .andExpect(model().hasErrors())
                 .andExpect(model().attributeExists("passwordForm"))
                 .andExpect(model().attributeExists("account"));
+    }
+
+    @WithAccount("nyju")
+    @DisplayName("계정의 태그 수정 폼")
+    @Test
+    void updateTagsForm() throws Exception {
+        
+        // 이전에는 폼에다 param 을 추가해서 보냈지만 태그는 다름
+        mockMvc.perform(get(SettingsController.SETTINGS_TAGS_URL))
+                .andExpect(view().name(SettingsController.SETTINGS_TAGS_VIEW_NAME))
+                .andExpect(model().attributeExists("account"))
+                .andExpect(model().attributeExists("whitelist"))
+                .andExpect(model().attributeExists("tags"));
+    }
+
+    @WithAccount("nyju")
+    @DisplayName("계정에 태그 추가")
+    @Test
+    void addTag() throws Exception {
+        TagForm tagForm = new TagForm();
+        tagForm.setTagTitle("newTag");
+
+        mockMvc.perform(post(SettingsController.SETTINGS_TAGS_URL + "/add")
+                .contentType(MediaType.APPLICATION_JSON) // 파라미터가 아닌 본문으로 들어온다.
+                .content(objectMapper.writeValueAsString(tagForm)) // 본문이 json 문자열로 들어온다.
+                .with(csrf()))
+                .andExpect(status().isOk());
+
+        Tag newTag = tagRepository.findByTitle("newTag");
+        assertNotNull(newTag);
+        Account nyju = accountRepository.findByNickname("nyju");
+
+        // nyju.getTags() 는 nyju 객체가 detached 상태이기 떄문에 error => @Transactional 을 붙여줘야함..
+        assertTrue(nyju.getTags().contains(newTag));
+    }
+
+    @WithAccount("nyju")
+    @DisplayName("계정에 태그 삭제")
+    @Test
+    void removeTag() throws Exception {
+        Account nyju = accountRepository.findByNickname("nyju");
+        Tag newTag = tagRepository.save(Tag.builder().title("newTag").build());
+        accountService.addTag(nyju, newTag);
+
+        assertTrue(nyju.getTags().contains(newTag));
+
+        TagForm tagForm = new TagForm();
+        tagForm.setTagTitle("newTag");
+
+        mockMvc.perform(post(SettingsController.SETTINGS_TAGS_URL + "/remove")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(tagForm))
+                .with(csrf()))
+                .andExpect(status().isOk());
+
+        assertFalse(nyju.getTags().contains(newTag));
     }
 }

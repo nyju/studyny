@@ -1,6 +1,7 @@
 package com.studyny.account;
 
 import com.studyny.domain.Account;
+import com.studyny.domain.Tag;
 import com.studyny.settings.form.Notifications;
 import com.studyny.settings.form.Profile;
 import lombok.RequiredArgsConstructor;
@@ -20,10 +21,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 
 /**
  * Account Service 클래스
+ *
  * @author nyju
  * @since 2021-01-16 오후 11:50
  **/
@@ -41,15 +45,22 @@ public class AccountService implements UserDetailsService {
 
     public Account processNewAccount(SignUpForm signUpForm) {
         Account newAccount = saveNewAccount(signUpForm); // 새로운 Account 생성
+        
+/*      saveNewAccount() 에서 생성하는것으로 변경
         newAccount.generateEmailCheckToken(); // 이메일 체크 토큰 생성
         // saveNewAccount 후에 detached 상태가 되기 때문에 토큰값이 저장이 안됨
-        // persist 상태 유지를 위해 @Transactional 을 붙여야 함
+        // persist 상태 유지를 위해 @Transactional 을 붙여야 함*/
 
         sendSignUpConfirmEmail(newAccount); // 이메일 전송
         return newAccount;
     }
 
     private Account saveNewAccount(@Valid SignUpForm signUpForm) {
+        signUpForm.setPassword(passwordEncoder.encode(signUpForm.getPassword()));
+        Account account = modelMapper.map(signUpForm, Account.class);
+        account.generateEmailCheckToken();
+
+/*      ModelMapper로 변경
         Account account = Account.builder()
                 .email(signUpForm.getEmail())
                 .nickname(signUpForm.getNickname())
@@ -57,7 +68,8 @@ public class AccountService implements UserDetailsService {
                 .studyCreatedByWeb(true)
                 .studyEnrollmentResultByWeb(true)
                 .studyUpdatedByWeb(true)
-                .build();
+                .build(); // builder를 사용하면 기본값이 있더라도 명시적으로 셋팅을 해줘야 한다.*/
+
         return accountRepository.save(account);
     }
 
@@ -142,5 +154,25 @@ public class AccountService implements UserDetailsService {
     public void updateNickname(Account account, String nickname) {
         modelMapper.map(nickname, account);
         accountRepository.save(account);
+    }
+
+    public void addTag(Account account, Tag tag) {
+        // account 가 detached 상태에기 때문에 toMany연관관계에 있는 tag도 lazy로딩 불가능하다.
+        // account 를 먼저 가져와야 한다.
+        Optional<Account> byId = accountRepository.findById(account.getId());
+        byId.ifPresent(a -> a.getTags().add(tag)); // 값이 있으면 실행, 없으면 아무일도 안일어남
+
+        // accountRepository.getOne() 은 lazy로딩. 필요한 순간에만 읽어옴. 경우에 따라 효율적
+        // getOne vs findById 비교
+    }
+
+    public Set<Tag> getTags(Account account) {
+        Optional<Account> byId = accountRepository.findById(account.getId());
+        return byId.orElseThrow().getTags();
+    }
+
+    public void removeTag(Account account, Tag tag) {
+        Optional<Account> byId = accountRepository.findById(account.getId());
+        byId.ifPresent(a -> a.getTags().remove(tag));
     }
 }
