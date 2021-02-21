@@ -1,11 +1,21 @@
 package com.studyny.domain;
 
+import com.studyny.account.UserAccount;
 import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Set;
 
+
+
+@NamedEntityGraph(name = "Study.withAll", attributeNodes = {
+        @NamedAttributeNode("tags"),
+        @NamedAttributeNode("zones"),
+        @NamedAttributeNode("managers"),
+        @NamedAttributeNode("members")})
+// findByPath 메서드를 사용할때 무조건 다 필요하도록 eagar로 한번에 가져오도록 한다. 여러번 select 되지 않도록
 @Entity
 @Getter @Setter @EqualsAndHashCode(of = "id")
 @Builder @AllArgsConstructor @NoArgsConstructor
@@ -18,10 +28,10 @@ public class Study {
     private Long id;
 
     @ManyToMany
-    private Set<Account> managers;
+    private Set<Account> managers = new HashSet<>();
 
     @ManyToMany
-    private Set<Account> members;
+    private Set<Account> members = new HashSet<>();
 
     @Column(unique = true)
     private String path; // url 경로이기 때문에 unique
@@ -39,10 +49,10 @@ public class Study {
     private String image;
 
     @ManyToMany
-    private Set<Tag> tags;
+    private Set<Tag> tags = new HashSet<>();
 
     @ManyToMany
-    private Set<Zone> zones;
+    private Set<Zone> zones = new HashSet<>();
 
     private LocalDateTime publishedDateTime; // 스터디 공개한 시간
 
@@ -58,4 +68,22 @@ public class Study {
 
     private boolean useBanner; // 배너사용 여부
 
+    public void addManager(Account account) {
+        this.managers.add(account);
+    }
+
+    public boolean isJoinable(UserAccount userAccount) {
+        Account account = userAccount.getAccount();
+        return this.isPublished() && this.isRecruiting()
+                && !this.members.contains(account) && !this.managers.contains(account);
+
+    }
+
+    public boolean isMember(UserAccount userAccount) {
+        return this.members.contains(userAccount.getAccount());
+    }
+
+    public boolean isManager(UserAccount userAccount) {
+        return this.managers.contains(userAccount.getAccount());
+    }
 }
