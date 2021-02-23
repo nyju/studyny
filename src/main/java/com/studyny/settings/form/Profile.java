@@ -22,6 +22,8 @@ public class Profile {
     @Length(max = 50)
     private String location;
 
+    private String profileImage;
+
     // 컨트롤러에서 Profile 로 바인딩을 받을 때 NullpointerException 에러 발생
     // Profile 생성자가 실행될때 Account 가 없기 때문
     // @NoArgsConstructor를 쓰거나 기본생성자 Profile() 를 생성해줘야 함

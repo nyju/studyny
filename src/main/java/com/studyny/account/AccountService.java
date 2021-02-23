@@ -123,7 +123,6 @@ public class AccountService implements UserDetailsService {
 
     public void updateProfile(Account account, Profile profile) {
         modelMapper.map(profile, account);
-        // TODO 프로필 이미지
         accountRepository.save(account); // acount가 detached 상태이기 때문. completeSignUp의 account 와 상태 다름
 
 
