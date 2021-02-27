@@ -93,13 +93,9 @@ public class AccountController {
 
     @GetMapping("/profile/{nickname}") // @PathVariable 로 닉네임 파싱
     public String viewProfile(@PathVariable String nickname, Model model, @CurrentUser Account account) {
-        Account byNickname = accountRepository.findByNickname(nickname);
-        if (nickname == null) {
-            throw new IllegalArgumentException(nickname + "에 해당하는 사용자가 없습니다.");
-        }
-
-        model.addAttribute(byNickname); // model.addAttribute("account", byNickname); 와 같음. camel case가 기본값
-        model.addAttribute("isOwner", byNickname.equals(account));
+        Account accountToView = accountService.getAccount(nickname);
+        model.addAttribute(accountToView);
+        model.addAttribute("isOwner", accountToView.equals(account));
         return "account/profile";
     }
 
