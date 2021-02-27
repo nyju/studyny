@@ -11,6 +11,7 @@ import com.studyny.settings.form.*;
 import com.studyny.settings.validator.NicknameValidator;
 import com.studyny.settings.validator.PasswordFormValidator;
 import com.studyny.tag.TagRepository;
+import com.studyny.tag.TagService;
 import com.studyny.zone.ZoneRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -54,6 +55,7 @@ public class SettingsController {
     private final ModelMapper modelMapper;
     private final NicknameValidator nicknameValidator;
     private final TagRepository tagRepository;
+    private final TagService tagService;
     private final ZoneRepository zoneRepository;
     private final ObjectMapper objectMapper;
 
@@ -169,7 +171,8 @@ public class SettingsController {
     @ResponseBody // ajax 요청이기 때문에 ResponseBody
     public ResponseEntity addTag(@CurrentUser Account account, @RequestBody TagForm tagForm) {
         // 요청 본문에 들어오기 때문에 @RequestBody 를 붙여준다.
-        String title = tagForm.getTagTitle();
+        Tag tag = tagService.findOrCreateNew(tagForm.getTagTitle());
+       /* String title = tagForm.getTagTitle();
 
         Tag tag = tagRepository.findByTitle(title);
         // Optional 로 받을수도 있고 엔티티타입으로 바로 받을수도 있다.
@@ -177,7 +180,7 @@ public class SettingsController {
 
         if (tag == null) {
             tag = tagRepository.save(Tag.builder().title(tagForm.getTagTitle()).build());
-        }
+        }*/
 
         accountService.addTag(account, tag);
         return ResponseEntity.ok().build();

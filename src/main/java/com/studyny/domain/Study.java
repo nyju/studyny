@@ -16,6 +16,12 @@ import java.util.Set;
         @NamedAttributeNode("managers"),
         @NamedAttributeNode("members")})
 // findByPath 메서드를 사용할때 무조건 다 필요하도록 eagar로 한번에 가져오도록 한다. 여러번 select 되지 않도록
+@NamedEntityGraph(name = "Study.withTagsAndManagers", attributeNodes = {
+        @NamedAttributeNode("tags"),
+        @NamedAttributeNode("managers")})
+@NamedEntityGraph(name = "Study.withZonesAndManagers", attributeNodes = {
+        @NamedAttributeNode("zones"),
+        @NamedAttributeNode("managers")})
 @Entity
 @Getter @Setter @EqualsAndHashCode(of = "id")
 @Builder @AllArgsConstructor @NoArgsConstructor

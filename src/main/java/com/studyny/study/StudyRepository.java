@@ -13,4 +13,11 @@ public interface StudyRepository extends JpaRepository<Study, Long> {
     // EntityGraph 로 명시한것은 eagar모드로, 나머지는 기본 fetch 타입. ( one으로 끝나는건 eagar, many로 끝나는건 lazy)
     @EntityGraph(value = "Study.withAll", type = EntityGraph.EntityGraphType.LOAD)
     Study findByPath(String path);
+
+    @EntityGraph(value = "Study.withTagsAndManagers", type = EntityGraph.EntityGraphType.FETCH)
+    Study findAccountWithTagsByPath(String path);
+    // withtags는 무시되고 findByPath와 같은 쿼리가 발생됨
+
+    @EntityGraph(value = "Study.withZonesAndManagers", type = EntityGraph.EntityGraphType.FETCH)
+    Study findAccountWithZonesByPath(String path);
 }
