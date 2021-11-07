@@ -1,7 +1,7 @@
 # studyny
 
 
-[tistory_blog](https://anjuna.tistory.com/category/Study/Spring%20JPA)
+[tistory_blog 정리내용 보기](https://anjuna.tistory.com/category/Study/Spring%20JPA)
 
 
 * 회원가입 폼 검증
