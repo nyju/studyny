@@ -1,4 +1,4 @@
-# studyny
+# 스프링 JPA 기반 웹 애플리케이션 학습
 
 
 [tistory_blog 정리내용 보기](https://anjuna.tistory.com/category/Study/Spring%20JPA)
